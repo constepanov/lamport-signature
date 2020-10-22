@@ -1,6 +1,7 @@
 package org.suai.crypto;
 
 import org.suai.crypto.lamport.LamportSignature;
+import org.suai.crypto.util.SignatureAnalyzer;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -15,5 +16,6 @@ public class Main {
         BigInteger[] signature = lamport.sign(message.getBytes(), keyPair.getPrivate());
         boolean signatureStatus = lamport.verify(message.getBytes(), signature, keyPair.getPublic());
         System.out.println(signatureStatus);
+        SignatureAnalyzer.plotSignatureSizeDependenceOnMessageSize();
     }
 }
