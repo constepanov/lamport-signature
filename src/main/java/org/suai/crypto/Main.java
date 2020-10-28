@@ -1,31 +1,43 @@
 package org.suai.crypto;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import org.suai.crypto.lamport.LamportPublicKey;
 import org.suai.crypto.lamport.LamportSignature;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
+import static org.suai.crypto.util.SignatureUtil.*;
 
 public class Main {
-    public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-        boolean signMode = false;
-        final int messageLength = 4;
+
+    @Parameter(names={"--length", "-l"}, description = "Message length in bytes")
+    int messageLength;
+    @Parameter(names = "-sign", description = "Sign mode - true, Verify mode - false")
+    boolean signMode = false;
+
+    public static void main(String... args) throws NoSuchAlgorithmException, IOException {
+        Main main = new Main();
+        JCommander.newBuilder()
+                .addObject(main)
+                .build()
+                .parse(args);
+        main.run();
+        //SignatureAnalyzer.plotSignatureSignAndVerifyTimeDependenceOnMessageSize();
+    }
+
+    public void run() throws IOException, NoSuchAlgorithmException {
         final String baseDir = "src/main/resources/";
         Path messagePath = Path.of(baseDir, "message");
         Path signaturePath = Path.of(baseDir, "signature");
         Path publicKeyPath = Path.of(baseDir, "public-key");
-        LamportSignature lamport = new LamportSignature(messageLength * 8);
         if (signMode) {
+            LamportSignature lamport = new LamportSignature(messageLength * 8);
             byte[] message = generateRandomMessage(messageLength);
             KeyPair keyPair = lamport.generateKeyPair();
             BigInteger[] signature = lamport.sign(message, keyPair.getPrivate());
@@ -36,59 +48,12 @@ public class Main {
             saveBigIntegerPairArray(key, publicKeyPath);
         } else {
             byte[] message = readBinaryMessage(messagePath);
+            LamportSignature lamport = new LamportSignature(message.length * 8);
             BigInteger[] signature = readBigIntegerArray(signaturePath);
             BigInteger[][] key = readBigIntegerPairArray(publicKeyPath);
             PublicKey publicKey = new LamportPublicKey(key);
             boolean signatureStatus = lamport.verify(message, signature, publicKey);
             System.out.println("Signature status: " + signatureStatus);
         }
-        //SignatureAnalyzer.plotSignatureSignAndVerifyTimeDependenceOnMessageSize();
-    }
-
-    private static byte[] generateRandomMessage(int messageLength) {
-        SecureRandom random = new SecureRandom();
-        byte[] message = new byte[messageLength];
-        random.nextBytes(message);
-        return message;
-    }
-
-    private static void saveBigIntegerArray(BigInteger[] values, Path path) throws IOException {
-        List<String> lines = Arrays.stream(values).map(BigInteger::toString).collect(Collectors.toList());
-        Files.write(path, lines);
-    }
-
-    private static void saveBigIntegerPairArray(BigInteger[][] values, Path path) throws IOException {
-        List<String> lines = IntStream.range(0, values[0].length)
-                .mapToObj(i -> values[0][i].toString() + " " + values[1][i].toString())
-                .collect(Collectors.toList());
-        Files.write(path, lines);
-    }
-
-    private static BigInteger[] readBigIntegerArray(Path path) throws IOException {
-        List<String> lines = Files.readAllLines(path);
-        BigInteger[] values = new BigInteger[lines.size()];
-        Arrays.setAll(values, i -> new BigInteger(lines.get(i)));
-        return values;
-    }
-
-    private static BigInteger[][] readBigIntegerPairArray(Path path) throws IOException {
-        List<String> lines = Files.readAllLines(path);
-        BigInteger[][] values = new BigInteger[2][lines.size()];
-        for (int i = 0; i < lines.size(); i++) {
-            String[] line = lines.get(i).split(" ");
-            values[0][i] = new BigInteger(line[0]);
-            values[1][i] = new BigInteger(line[1]);
-        }
-        return values;
-    }
-
-    private static void saveMessageAsBitString(byte[] message, Path messagePath) throws IOException {
-        String messageBitString = new BigInteger(message).toString(2);
-        Files.writeString(messagePath, messageBitString);
-    }
-
-    private static byte[] readBinaryMessage(Path messagePath) throws IOException {
-        String binaryString = Files.readString(messagePath);
-        return new BigInteger(binaryString, 2).toByteArray();
     }
 }
