@@ -78,7 +78,7 @@ public class SignatureAnalyzer {
         List<Long> verifyTimeList = new ArrayList<>();
         List<Integer> messageSizes = new ArrayList<>();
         SecureRandom random = new SecureRandom();
-        for (int i = 500; i < 600; i += 20) {
+        for (int i = 1000; i < 33000; i += 3000) {
             int messageSize = i * 8;
             byte[] message = new byte[i];
             random.nextBytes(message);
