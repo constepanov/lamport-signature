@@ -50,7 +50,7 @@ public class SignatureUtil {
     }
 
     public static void saveMessageAsBitString(byte[] message, Path messagePath) throws IOException {
-        String messageBitString = new BigInteger(message).toString(2);
+        String messageBitString = new BigInteger(1, message).toString(2);
         Files.writeString(messagePath, messageBitString);
     }
 

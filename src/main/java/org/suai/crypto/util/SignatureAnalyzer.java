@@ -14,16 +14,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SignatureAnalyzer {
-    public static void plotPrivateKeySizeDependenceOnMessageSize() {
+    public static void plotPublicAndPrivateKeySizeDependenceOnMessageSize() {
         XYChart chart = new XYChartBuilder()
                 .width(800).height(600)
                 .theme(Styler.ChartTheme.Matlab)
-                .title("Private or public key size dependence on message Size")
+                .title("Private and public key size dependence on message Size")
                 .xAxisTitle("Message size (bits)").yAxisTitle("Private key size (bits)")
                 .build();
 
         chart.getStyler().setLegendVisible(false);
-        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNE);
+        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNW);
 
         List<Integer> publicKeySizes = new ArrayList<>();
         List<Integer> messageSizes = new ArrayList<>();
@@ -48,7 +48,7 @@ public class SignatureAnalyzer {
                 .build();
 
         chart.getStyler().setLegendVisible(false);
-        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNE);
+        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNW);
 
         List<Integer> signatureSizes = new ArrayList<>();
         List<Integer> messageSizes = new ArrayList<>();
@@ -72,16 +72,16 @@ public class SignatureAnalyzer {
                 .xAxisTitle("Message size (bits)").yAxisTitle("Time")
                 .build();
 
-        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNE);
+        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNW);
 
         List<Long> signTimeList = new ArrayList<>();
         List<Long> verifyTimeList = new ArrayList<>();
         List<Integer> messageSizes = new ArrayList<>();
         SecureRandom random = new SecureRandom();
-        for (int i = 1000; i < 33000; i += 3000) {
-            int messageSize = i * 8;
+        for (int i = 10000; i < 200000; i += 10000) {
             byte[] message = new byte[i];
             random.nextBytes(message);
+            int messageSize = new BigInteger(1, message).bitLength();
             LamportSignature lamport = new LamportSignature(messageSize);
             KeyPair keyPair = lamport.generateKeyPair();
 

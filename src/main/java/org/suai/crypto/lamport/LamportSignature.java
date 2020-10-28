@@ -37,20 +37,22 @@ public class LamportSignature implements OneTimeSignature {
 
     public BigInteger[] sign(byte[] message, PrivateKey privateKey) {
         BigInteger[] signature = new BigInteger[numberOfPairs];
-        BigInteger messageIntRepresentation = new BigInteger(message);
+        BigInteger messageIntRepresentation = new BigInteger(1, message);
         BigInteger[][] key = ((LamportPrivateKey) privateKey).getKey();
+        String binaryMessage = messageIntRepresentation.toString(2);
         for (int i = 0; i < numberOfPairs; i++) {
-            int bit = messageIntRepresentation.shiftRight(i).and(BigInteger.ONE).intValue();
+            int bit = Integer.parseInt(String.valueOf(binaryMessage.charAt(i)));
             signature[i] = key[bit][i];
         }
         return signature;
     }
 
     public boolean verify(byte[] message, BigInteger[] signature, PublicKey publicKey) {
-        BigInteger messageIntRepresentation = new BigInteger(message);
+        BigInteger messageIntRepresentation = new BigInteger(1, message);
         BigInteger[][] key = ((LamportPublicKey) publicKey).getKey();
+        String binaryMessage = messageIntRepresentation.toString(2);
         for (int i = 0; i < numberOfPairs; i++) {
-            int bit = messageIntRepresentation.shiftRight(i).and(BigInteger.ONE).intValue();
+            int bit = Integer.parseInt(String.valueOf(binaryMessage.charAt(i)));
             BigInteger checkHash = new BigInteger(digest.digest(signature[i].toByteArray()));
             if (!checkHash.equals(key[bit][i])) {
                 return false;
